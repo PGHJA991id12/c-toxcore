@@ -42,6 +42,8 @@ function(pkg_use_module mod pkgs)
     if(${mod}_FOUND)
       link_directories(${${mod}_LIBRARY_DIRS})
       include_directories(${${mod}_INCLUDE_DIRS})
+	  #link_libraries(${${mod}_LIBRARIES})
+	  message("II mod found lib: ${${mod}_LIBRARIES}")
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${${mod}_CFLAGS_OTHER}" PARENT_SCOPE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${${mod}_CFLAGS_OTHER}" PARENT_SCOPE)
 

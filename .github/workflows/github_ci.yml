@@ -1,0 +1,39 @@
+name: github_ci
+
+on:
+  pull_request:
+    branches: [master]
+
+## Cancel old PR builds when pushing new commits.
+#concurrency:
+  #group: build-${{ github.event.pull_request.number || github.ref }}
+  #cancel-in-progress: true
+
+jobs:
+  #common:
+    #uses: TokTok/ci-tools/.github/workflows/common-ci.yml@master
+
+  simple_windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install Dependencies
+        run: vcpkg install libsodium:x64-windows-static pthreads:x64-windows-static
+
+      - name: inspect libfolder
+        run: dir C:\vcpkg\installed\x64-windows-static\lib\pkgconfig\..\..\lib
+
+       # setup vs env # TODO: remove this
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+      - name: Configure CMake
+        run: cmake -G Ninja -B ${{github.workspace}}/_build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DAUTOTEST=ON -DMIN_LOGGER_LEVEL=DEBUG -DBUILD_TOXAV=OFF -DENABLE_STATIC=ON -DENABLE_SHARED=OFF
+      - name: Build
+        run: cmake --build ${{github.workspace}}/_build --config Release -j 4
+      - name: Test
+        run: ctest --test-dir ${{github.workspace}}/_build -C Release
+
