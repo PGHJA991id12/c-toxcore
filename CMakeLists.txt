@@ -123,6 +123,10 @@ if(MSVC)
   add_compile_options(/wd6387)  # passing NULL to fwrite
 endif()
 
+#include(CheckIPOSupported)
+#check_ipo_supported(RESULT supported OUTPUT error)
+#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 set(MIN_LOGGER_LEVEL "" CACHE STRING "Logging level to use (TRACE, DEBUG, INFO, WARNING, ERROR)")
 if(MIN_LOGGER_LEVEL)
   if(("${MIN_LOGGER_LEVEL}" STREQUAL "TRACE") OR

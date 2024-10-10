@@ -27,3 +27,10 @@ fuzz_test(forwarding       ../../toxcore)
 fuzz_test(group_announce   ../../toxcore)
 fuzz_test(group_moderation ../../toxcore)
 fuzz_test(tox_events       ../../toxcore)
+
+add_executable(e2e_fuzz_test ./e2e_fuzz_test.cc)
+target_link_libraries(e2e_fuzz_test PRIVATE fuzz_support test_util toxcore_fuzz ${LIBFUZZER_LINKER_FLAGS})
+
+add_executable(e2e_proto_dump ./protodump.cc)
+target_link_libraries(e2e_proto_dump PRIVATE fuzz_support test_util toxcore_fuzz)
+

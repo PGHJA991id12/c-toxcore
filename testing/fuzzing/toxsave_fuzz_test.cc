@@ -17,6 +17,8 @@ void TestSaveDataLoading(Fuzz_Data &input)
     assert(tox_options != nullptr);
     assert(error_options == TOX_ERR_OPTIONS_NEW_OK);
 
+    tox_options_set_experimental_groups_persistence(tox_options, true);
+
     const size_t savedata_size = input.size();
     CONSUME_OR_RETURN(const uint8_t *savedata, input, savedata_size);
 

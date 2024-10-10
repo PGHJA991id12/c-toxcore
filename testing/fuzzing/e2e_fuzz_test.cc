@@ -128,6 +128,20 @@ void setup_callbacks(Tox_Dispatch *dispatch)
         dispatch, [](const Tox_Event_Self_Connection_Status *event, void *user_data) {
             // OK: we got connected.
         });
+	tox_events_callback_group_invite(
+		dispatch, [](const Tox_Event_Group_Invite* event, void* user_data) {
+            Tox *tox = static_cast<Tox *>(user_data);
+			const auto name = "1";
+			tox_group_invite_accept(
+				tox,
+				tox_event_group_invite_get_friend_number(event),
+				tox_event_group_invite_get_invite_data(event),
+				tox_event_group_invite_get_invite_data_length(event),
+				reinterpret_cast<const uint8_t*>(name), 1,
+				nullptr, 0,
+				nullptr
+			);
+		});
 }
 
 void TestEndToEnd(Fuzz_Data &input)
@@ -187,8 +201,10 @@ void TestEndToEnd(Fuzz_Data &input)
     tox_kill(tox);
 }
 
+#if 0
 const std::vector<uint8_t> startup_data = [] {
-    constexpr char startup_file[] = "tools/toktok-fuzzer/init/e2e_fuzz_test.dat";
+    //constexpr char startup_file[] = "tools/toktok-fuzzer/init/e2e_fuzz_test.dat";
+    constexpr char startup_file[] = "e2e_fuzz_test_init.dat";
 
     struct stat statbuf;
     const int res = stat(startup_file, &statbuf);
@@ -202,17 +218,22 @@ const std::vector<uint8_t> startup_data = [] {
     assert(read_count > 0 && read_count == statbuf.st_size);
     return data;
 }();
+#endif
 
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+#if 0
     std::vector<uint8_t> full_data(startup_data.size() + size);
     std::copy(startup_data.begin(), startup_data.end(), full_data.begin());
     std::copy(data, data + size, full_data.begin() + startup_data.size());
 
     Fuzz_Data input{full_data.data(), full_data.size()};
+#else
+    Fuzz_Data input{data, size};
+#endif
     TestEndToEnd(input);
     return 0;  // Non-zero return values are reserved for future use.
 }

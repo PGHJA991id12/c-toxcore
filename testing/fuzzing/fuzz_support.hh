@@ -340,7 +340,11 @@ struct Record_System : System {
     }
 
     const std::vector<uint8_t> &recording() const { return recording_; }
-    std::vector<uint8_t> take_recording() const { return std::move(recording_); }
+    std::vector<uint8_t> take_recording() {
+		std::vector<uint8_t> taken = std::move(recording_);
+		recording_ = {};
+		return taken;
+	}
 
 private:
     std::vector<uint8_t> recording_;

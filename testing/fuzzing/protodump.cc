@@ -48,6 +48,7 @@ constexpr uint32_t MESSAGE_COUNT = 5;
 struct State {
     Tox *tox;
     uint32_t done;
+	uint32_t group_done;
 };
 
 void setup_callbacks(Tox_Dispatch *dispatch)
@@ -168,6 +169,25 @@ void setup_callbacks(Tox_Dispatch *dispatch)
         dispatch, [](const Tox_Event_Self_Connection_Status *event, void *user_data) {
             // OK: we got connected.
         });
+	tox_events_callback_group_invite(
+		dispatch, [](const Tox_Event_Group_Invite* event, void* user_data) {
+            State *state = static_cast<State *>(user_data);
+			const auto name = "1";
+			tox_group_invite_accept(
+				state->tox,
+				tox_event_group_invite_get_friend_number(event),
+				tox_event_group_invite_get_invite_data(event),
+				tox_event_group_invite_get_invite_data_length(event),
+				reinterpret_cast<const uint8_t*>(name), 1,
+				nullptr, 0,
+				nullptr
+			);
+		});
+	tox_events_callback_group_peer_join(
+		dispatch, [](const Tox_Event_Group_Peer_Join* event, void* user_data) {
+            State *state = static_cast<State *>(user_data);
+			state->group_done += 1;
+		});
 }
 
 void dump(std::vector<uint8_t> recording, const char *filename)
@@ -302,6 +322,7 @@ void RecordBootstrap(const char *init, const char *bootstrap)
 
     std::printf("tox clients connected\n");
 
+
     dump(sys1.take_recording(), init);
 
     while (state1.done < MESSAGE_COUNT && state2.done < MESSAGE_COUNT) {
@@ -314,7 +335,16 @@ void RecordBootstrap(const char *init, const char *bootstrap)
         iterate(System::MESSAGE_ITERATION_INTERVAL);
     }
 
-    std::printf("test complete\n");
+    std::printf("messages received\n");
+
+	auto new_group_number = tox_group_new(tox2, TOX_GROUP_PRIVACY_STATE_PUBLIC, &msg, 1, &msg, 1, nullptr);
+	tox_group_invite_friend(tox2, new_group_number, 0, nullptr);
+
+    while (state1.group_done < 1 && state2.group_done < 1) {
+        iterate(System::MESSAGE_ITERATION_INTERVAL);
+    }
+
+    std::printf("group connected\n");
 
     tox_dispatch_free(dispatch);
     tox_kill(tox2);
@@ -327,8 +357,8 @@ void RecordBootstrap(const char *init, const char *bootstrap)
 
 int main(int argc, char *argv[])
 {
-    const char *init = "tools/toktok-fuzzer/init/e2e_fuzz_test.dat";
-    const char *bootstrap = "tools/toktok-fuzzer/corpus/e2e_fuzz_test/bootstrap.dat";
+    const char *init = "e2e_fuzz_test_init.dat";
+    const char *bootstrap = "e2e_fuzz_test_bootstrap.dat";
     if (argc == 3) {
         init = argv[1];
         bootstrap = argv[2];

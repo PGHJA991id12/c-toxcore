@@ -133,6 +133,15 @@ void TestBootstrap(Fuzz_Data &input)
         tox_options_set_tcp_port(opts.get(), 33445);
     }
 
+    tox_options_set_experimental_groups_persistence(opts.get(), true);
+
+	CONSUME1_OR_RETURN(const size_t, savedata_size, input);
+    CONSUME_OR_RETURN(const uint8_t *savedata, input, savedata_size);
+	if (savedata_size > 0) {
+	    tox_options_set_savedata_data(opts.get(), savedata, savedata_size);
+		tox_options_set_savedata_type(opts.get(), TOX_SAVEDATA_TYPE_TOX_SAVE);
+	}
+
     Tox_Options_Testing tox_options_testing;
     tox_options_testing.operating_system = sys.sys.get();
 
