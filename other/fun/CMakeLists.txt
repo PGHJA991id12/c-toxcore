@@ -49,3 +49,6 @@ else()
   add_executable(cracker cracker.c)
   target_link_sodium(cracker)
 endif()
+
+add_executable(ngc_scraper ./ngc_scraper.cpp)
+target_link_toxcore(ngc_scraper)
