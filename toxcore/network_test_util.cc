@@ -7,28 +7,28 @@
 #include "network.h"
 #include "test_util.hh"
 
-Network_Funcs const Network_Class::vtable = {
-    Method<net_close_cb, Network_Class>::invoke<&Network_Class::close>,
-    Method<net_accept_cb, Network_Class>::invoke<&Network_Class::accept>,
-    Method<net_bind_cb, Network_Class>::invoke<&Network_Class::bind>,
-    Method<net_listen_cb, Network_Class>::invoke<&Network_Class::listen>,
-    Method<net_connect_cb, Network_Class>::invoke<&Network_Class::connect>,
-    Method<net_recvbuf_cb, Network_Class>::invoke<&Network_Class::recvbuf>,
-    Method<net_recv_cb, Network_Class>::invoke<&Network_Class::recv>,
-    Method<net_recvfrom_cb, Network_Class>::invoke<&Network_Class::recvfrom>,
-    Method<net_send_cb, Network_Class>::invoke<&Network_Class::send>,
-    Method<net_sendto_cb, Network_Class>::invoke<&Network_Class::sendto>,
-    Method<net_socket_cb, Network_Class>::invoke<&Network_Class::socket>,
-    Method<net_socket_nonblock_cb, Network_Class>::invoke<&Network_Class::socket_nonblock>,
-    Method<net_getsockopt_cb, Network_Class>::invoke<&Network_Class::getsockopt>,
-    Method<net_setsockopt_cb, Network_Class>::invoke<&Network_Class::setsockopt>,
-    Method<net_getaddrinfo_cb, Network_Class>::invoke<&Network_Class::getaddrinfo>,
-    Method<net_freeaddrinfo_cb, Network_Class>::invoke<&Network_Class::freeaddrinfo>,
+BSD_Sockets_Funcs const Network_Class::vtable = {
+    Method<bsocks_close_cb, Network_Class>::invoke<&Network_Class::close>,
+    Method<bsocks_accept_cb, Network_Class>::invoke<&Network_Class::accept>,
+    Method<bsocks_bind_cb, Network_Class>::invoke<&Network_Class::bind>,
+    Method<bsocks_listen_cb, Network_Class>::invoke<&Network_Class::listen>,
+    Method<bsocks_connect_cb, Network_Class>::invoke<&Network_Class::connect>,
+    Method<bsocks_recvbuf_cb, Network_Class>::invoke<&Network_Class::recvbuf>,
+    Method<bsocks_recv_cb, Network_Class>::invoke<&Network_Class::recv>,
+    Method<bsocks_recvfrom_cb, Network_Class>::invoke<&Network_Class::recvfrom>,
+    Method<bsocks_send_cb, Network_Class>::invoke<&Network_Class::send>,
+    Method<bsocks_sendto_cb, Network_Class>::invoke<&Network_Class::sendto>,
+    Method<bsocks_socket_cb, Network_Class>::invoke<&Network_Class::socket>,
+    Method<bsocks_socket_nonblock_cb, Network_Class>::invoke<&Network_Class::socket_nonblock>,
+    Method<bsocks_getsockopt_cb, Network_Class>::invoke<&Network_Class::getsockopt>,
+    Method<bsocks_setsockopt_cb, Network_Class>::invoke<&Network_Class::setsockopt>,
+    Method<bsocks_getaddrinfo_cb, Network_Class>::invoke<&Network_Class::getaddrinfo>,
+    Method<bsocks_freeaddrinfo_cb, Network_Class>::invoke<&Network_Class::freeaddrinfo>,
 };
 
 int Test_Network::close(void *obj, Socket sock) { return net->funcs->close(net->obj, sock); }
 Socket Test_Network::accept(void *obj, Socket sock) { return net->funcs->accept(net->obj, sock); }
-int Test_Network::bind(void *obj, Socket sock, const Network_Addr *addr)
+int Test_Network::bind(void *obj, Socket sock, const BSD_Sockets_Addr *addr)
 {
     return net->funcs->bind(net->obj, sock, addr);
 }
@@ -36,7 +36,7 @@ int Test_Network::listen(void *obj, Socket sock, int backlog)
 {
     return net->funcs->listen(net->obj, sock, backlog);
 }
-int Test_Network::connect(void *obj, Socket sock, const Network_Addr *addr)
+int Test_Network::connect(void *obj, Socket sock, const BSD_Sockets_Addr *addr)
 {
     return net->funcs->connect(net->obj, sock, addr);
 }
@@ -45,7 +45,7 @@ int Test_Network::recv(void *obj, Socket sock, uint8_t *buf, size_t len)
 {
     return net->funcs->recv(net->obj, sock, buf, len);
 }
-int Test_Network::recvfrom(void *obj, Socket sock, uint8_t *buf, size_t len, Network_Addr *addr)
+int Test_Network::recvfrom(void *obj, Socket sock, uint8_t *buf, size_t len, BSD_Sockets_Addr *addr)
 {
     return net->funcs->recvfrom(net->obj, sock, buf, len, addr);
 }
@@ -54,7 +54,7 @@ int Test_Network::send(void *obj, Socket sock, const uint8_t *buf, size_t len)
     return net->funcs->send(net->obj, sock, buf, len);
 }
 int Test_Network::sendto(
-    void *obj, Socket sock, const uint8_t *buf, size_t len, const Network_Addr *addr)
+    void *obj, Socket sock, const uint8_t *buf, size_t len, const BSD_Sockets_Addr *addr)
 {
     return net->funcs->sendto(net->obj, sock, buf, len, addr);
 }
@@ -77,11 +77,11 @@ int Test_Network::setsockopt(
     return net->funcs->setsockopt(net->obj, sock, level, optname, optval, optlen);
 }
 int Test_Network::getaddrinfo(void *obj, const Memory *mem, const char *address, int family,
-    int protocol, Network_Addr **addrs)
+    int protocol, BSD_Sockets_Addr **addrs)
 {
     return net->funcs->getaddrinfo(net->obj, mem, address, family, protocol, addrs);
 }
-int Test_Network::freeaddrinfo(void *obj, const Memory *mem, Network_Addr *addrs)
+int Test_Network::freeaddrinfo(void *obj, const Memory *mem, BSD_Sockets_Addr *addrs)
 {
     return net->funcs->freeaddrinfo(net->obj, mem, addrs);
 }

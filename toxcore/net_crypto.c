@@ -136,7 +136,7 @@ struct Net_Crypto {
     const Memory *mem;
     const Random *rng;
     Mono_Time *mono_time;
-    const Network *ns;
+    const BSD_Sockets *ns;
 
     DHT *dht;
     TCP_Connections *tcp_c;
@@ -2987,7 +2987,7 @@ void load_secret_key(Net_Crypto *c, const uint8_t *sk)
 /** @brief Create new instance of Net_Crypto.
  * Sets all the global connection variables to their default values.
  */
-Net_Crypto *new_net_crypto(const Logger *log, const Memory *mem, const Random *rng, const Network *ns,
+Net_Crypto *new_net_crypto(const Logger *log, const Memory *mem, const Random *rng, const BSD_Sockets *ns,
                            Mono_Time *mono_time, DHT *dht, const TCP_Proxy_Info *proxy_info)
 {
     if (dht == nullptr) {

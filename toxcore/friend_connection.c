@@ -913,7 +913,7 @@ int send_friend_request_packet(Friend_Connections *fr_c, int friendcon_id, uint3
 
 /** Create new friend_connections instance. */
 Friend_Connections *new_friend_connections(
-    const Logger *logger, const Memory *mem, const Mono_Time *mono_time, const Network *ns,
+    const Logger *logger, const Memory *mem, const Mono_Time *mono_time, const BSD_Sockets *ns,
     Onion_Client *onion_c, bool local_discovery_enabled)
 {
     if (onion_c == nullptr) {

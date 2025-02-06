@@ -26,7 +26,7 @@ extern "C" {
 /**
  * @brief Wrapper for sockaddr_storage and size.
  */
-typedef struct Network_Addr Network_Addr;
+typedef struct BSD_Sockets_Addr BSD_Sockets_Addr;
 
 typedef bitwise int Socket_Value;
 typedef struct Socket {
@@ -36,53 +36,54 @@ typedef struct Socket {
 int net_socket_to_native(Socket sock);
 Socket net_socket_from_native(int sock);
 
-typedef int net_close_cb(void *obj, Socket sock);
-typedef Socket net_accept_cb(void *obj, Socket sock);
-typedef int net_bind_cb(void *obj, Socket sock, const Network_Addr *addr);
-typedef int net_listen_cb(void *obj, Socket sock, int backlog);
-typedef int net_connect_cb(void *obj, Socket sock, const Network_Addr *addr);
-typedef int net_recvbuf_cb(void *obj, Socket sock);
-typedef int net_recv_cb(void *obj, Socket sock, uint8_t *buf, size_t len);
-typedef int net_recvfrom_cb(void *obj, Socket sock, uint8_t *buf, size_t len, Network_Addr *addr);
-typedef int net_send_cb(void *obj, Socket sock, const uint8_t *buf, size_t len);
-typedef int net_sendto_cb(void *obj, Socket sock, const uint8_t *buf, size_t len, const Network_Addr *addr);
-typedef Socket net_socket_cb(void *obj, int domain, int type, int proto);
-typedef int net_socket_nonblock_cb(void *obj, Socket sock, bool nonblock);
-typedef int net_getsockopt_cb(void *obj, Socket sock, int level, int optname, void *optval, size_t *optlen);
-typedef int net_setsockopt_cb(void *obj, Socket sock, int level, int optname, const void *optval, size_t optlen);
-typedef int net_getaddrinfo_cb(void *obj, const Memory *mem, const char *address, int family, int protocol, Network_Addr **addrs);
-typedef int net_freeaddrinfo_cb(void *obj, const Memory *mem, Network_Addr *addrs);
+typedef int bsocks_close_cb(void *obj, Socket sock);
+typedef Socket bsocks_accept_cb(void *obj, Socket sock);
+typedef int bsocks_bind_cb(void *obj, Socket sock, const BSD_Sockets_Addr *addr);
+typedef int bsocks_listen_cb(void *obj, Socket sock, int backlog);
+typedef int bsocks_connect_cb(void *obj, Socket sock, const BSD_Sockets_Addr *addr);
+typedef int bsocks_recvbuf_cb(void *obj, Socket sock);
+typedef int bsocks_recv_cb(void *obj, Socket sock, uint8_t *buf, size_t len);
+typedef int bsocks_recvfrom_cb(void *obj, Socket sock, uint8_t *buf, size_t len, BSD_Sockets_Addr *addr);
+typedef int bsocks_send_cb(void *obj, Socket sock, const uint8_t *buf, size_t len);
+typedef int bsocks_sendto_cb(void *obj, Socket sock, const uint8_t *buf, size_t len, const BSD_Sockets_Addr *addr);
+typedef Socket bsocks_socket_cb(void *obj, int domain, int type, int proto);
+typedef int bsocks_socket_nonblock_cb(void *obj, Socket sock, bool nonblock);
+typedef int bsocks_getsockopt_cb(void *obj, Socket sock, int level, int optname, void *optval, size_t *optlen);
+typedef int bsocks_setsockopt_cb(void *obj, Socket sock, int level, int optname, const void *optval, size_t optlen);
+typedef int bsocks_getaddrinfo_cb(void *obj, const Memory *mem, const char *address, int family, int protocol, BSD_Sockets_Addr **addrs);
+typedef int bsocks_freeaddrinfo_cb(void *obj, const Memory *mem, BSD_Sockets_Addr *addrs);
 
 /** @brief Functions wrapping POSIX network functions.
  *
+ * Historically called BSD Sockets.
  * Refer to POSIX man pages for documentation of what these functions are
- * expected to do when providing alternative Network implementations.
+ * expected to do when providing alternative BSD_Sockets implementations.
  */
-typedef struct Network_Funcs {
-    net_close_cb *close;
-    net_accept_cb *accept;
-    net_bind_cb *bind;
-    net_listen_cb *listen;
-    net_connect_cb *connect;
-    net_recvbuf_cb *recvbuf;
-    net_recv_cb *recv;
-    net_recvfrom_cb *recvfrom;
-    net_send_cb *send;
-    net_sendto_cb *sendto;
-    net_socket_cb *socket;
-    net_socket_nonblock_cb *socket_nonblock;
-    net_getsockopt_cb *getsockopt;
-    net_setsockopt_cb *setsockopt;
-    net_getaddrinfo_cb *getaddrinfo;
-    net_freeaddrinfo_cb *freeaddrinfo;
-} Network_Funcs;
+typedef struct BSD_Sockets_Funcs {
+    bsocks_close_cb *close;
+    bsocks_accept_cb *accept;
+    bsocks_bind_cb *bind;
+    bsocks_listen_cb *listen;
+    bsocks_connect_cb *connect;
+    bsocks_recvbuf_cb *recvbuf;
+    bsocks_recv_cb *recv;
+    bsocks_recvfrom_cb *recvfrom;
+    bsocks_send_cb *send;
+    bsocks_sendto_cb *sendto;
+    bsocks_socket_cb *socket;
+    bsocks_socket_nonblock_cb *socket_nonblock;
+    bsocks_getsockopt_cb *getsockopt;
+    bsocks_setsockopt_cb *setsockopt;
+    bsocks_getaddrinfo_cb *getaddrinfo;
+    bsocks_freeaddrinfo_cb *freeaddrinfo;
+} BSD_Sockets_Funcs;
 
-typedef struct Network {
-    const Network_Funcs *funcs;
+typedef struct BSD_Sockets {
+    const BSD_Sockets_Funcs *funcs;
     void *obj;
-} Network;
+} BSD_Sockets;
 
-const Network *os_network(void);
+const BSD_Sockets *os_bsd_sockets(void);
 
 typedef struct Family {
     uint8_t value;
@@ -223,14 +224,14 @@ typedef struct IP_Port {
 } IP_Port;
 
 non_null()
-Socket net_socket(const Network *ns, Family domain, int type, int protocol);
+Socket net_socket(const BSD_Sockets *ns, Family domain, int type, int protocol);
 
 /**
  * Check if socket is valid.
  *
  * @return true if valid, false otherwise.
  */
-bool sock_valid(Socket sock);
+bool net_sock_valid(Socket sock);
 
 Socket net_invalid_socket(void);
 
@@ -246,7 +247,7 @@ Socket net_invalid_socket(void);
  * @param net_profile Network profile to record the packet.
  */
 non_null(1, 2, 4, 6) nullable(7)
-int net_send(const Network *ns, const Logger *log, Socket sock, const uint8_t *buf, size_t len, const IP_Port *ip_port,
+int net_send(const BSD_Sockets *ns, const Logger *log, Socket sock, const uint8_t *buf, size_t len, const IP_Port *ip_port,
              Net_Profile *net_profile);
 /**
  * Calls recv(sockfd, buf, len, MSG_NOSIGNAL).
@@ -259,24 +260,24 @@ int net_send(const Network *ns, const Logger *log, Socket sock, const uint8_t *b
  * @param ip_port IP and port of the sender.
  */
 non_null()
-int net_recv(const Network *ns, const Logger *log, Socket sock, uint8_t *buf, size_t len, const IP_Port *ip_port);
+int net_recv(const BSD_Sockets *ns, const Logger *log, Socket sock, uint8_t *buf, size_t len, const IP_Port *ip_port);
 /**
  * Calls listen(sockfd, backlog).
  */
 non_null()
-int net_listen(const Network *ns, Socket sock, int backlog);
+int net_listen(const BSD_Sockets *ns, Socket sock, int backlog);
 /**
  * Calls accept(sockfd, nullptr, nullptr).
  */
 non_null()
-Socket net_accept(const Network *ns, Socket sock);
+Socket net_accept(const BSD_Sockets *ns, Socket sock);
 
 /**
  * return the size of data in the tcp recv buffer.
  * return 0 on failure.
  */
 non_null()
-uint16_t net_socket_data_recv_buffer(const Network *ns, Socket sock);
+uint16_t net_socket_data_recv_buffer(const BSD_Sockets *ns, Socket sock);
 
 /** Convert values between host and network byte order. */
 uint32_t net_htonl(uint32_t hostlong);
@@ -417,7 +418,7 @@ void ipport_copy(IP_Port *target, const IP_Port *source);
 /**
  * @brief Resolves string into an IP address.
  *
- * @param[in,out] ns Network object.
+ * @param[in,out] ns BSD_Sockets object.
  * @param[in] address a hostname (or something parseable to an IP address).
  * @param[in,out] to to.family MUST be initialized, either set to a specific IP version
  *   (TOX_AF_INET/TOX_AF_INET6) or to the unspecified TOX_AF_UNSPEC (0), if both
@@ -431,7 +432,7 @@ void ipport_copy(IP_Port *target, const IP_Port *source);
  * @return true on success, false on failure
  */
 non_null(1, 2, 3, 4) nullable(5)
-bool addr_resolve_or_parse_ip(const Network *ns, const Memory *mem, const char *address, IP *to, IP *extra, bool dns_enabled);
+bool addr_resolve_or_parse_ip(const BSD_Sockets *ns, const Memory *mem, const char *address, IP *to, IP *extra, bool dns_enabled);
 
 /** @brief Function to receive data, ip and port of sender is put into ip_port.
  * Packet data is put into data.
@@ -448,7 +449,7 @@ uint16_t net_port(const Networking_Core *net);
 
 /** Close the socket. */
 non_null()
-void kill_sock(const Network *ns, Socket sock);
+void kill_sock(const BSD_Sockets *ns, Socket sock);
 
 /**
  * Set socket as nonblocking
@@ -456,7 +457,7 @@ void kill_sock(const Network *ns, Socket sock);
  * @return true on success, false on failure.
  */
 non_null()
-bool set_socket_nonblock(const Network *ns, Socket sock);
+bool set_socket_nonblock(const BSD_Sockets *ns, Socket sock);
 
 /**
  * Set socket to not emit SIGPIPE
@@ -464,7 +465,7 @@ bool set_socket_nonblock(const Network *ns, Socket sock);
  * @return true on success, false on failure.
  */
 non_null()
-bool set_socket_nosigpipe(const Network *ns, Socket sock);
+bool set_socket_nosigpipe(const BSD_Sockets *ns, Socket sock);
 
 /**
  * Enable SO_REUSEADDR on socket.
@@ -472,7 +473,7 @@ bool set_socket_nosigpipe(const Network *ns, Socket sock);
  * @return true on success, false on failure.
  */
 non_null()
-bool set_socket_reuseaddr(const Network *ns, Socket sock);
+bool set_socket_reuseaddr(const BSD_Sockets *ns, Socket sock);
 
 /**
  * Set socket to dual (IPv4 + IPv6 socket)
@@ -480,7 +481,7 @@ bool set_socket_reuseaddr(const Network *ns, Socket sock);
  * @return true on success, false on failure.
  */
 non_null()
-bool set_socket_dualstack(const Network *ns, Socket sock);
+bool set_socket_dualstack(const BSD_Sockets *ns, Socket sock);
 
 /* Basic network functions: */
 
@@ -531,7 +532,7 @@ const char *net_err_connect_to_string(Net_Err_Connect err);
  * @retval true on success, false on failure.
  */
 non_null()
-bool net_connect(const Network *ns, const Memory *mem, const Logger *log, Socket sock, const IP_Port *ip_port, Net_Err_Connect *err);
+bool net_connect(const BSD_Sockets *ns, const Memory *mem, const Logger *log, Socket sock, const IP_Port *ip_port, Net_Err_Connect *err);
 
 /** @brief High-level getaddrinfo implementation.
  *
@@ -542,7 +543,7 @@ bool net_connect(const Network *ns, const Memory *mem, const Logger *log, Socket
  * Skip all addresses with socktype != type (use type = -1 to get all addresses)
  * To correctly deallocate array memory use `net_freeipport()`.
  *
- * @param ns Network object.
+ * @param ns BSD_Sockets object.
  * @param mem Memory allocator.
  * @param node The node parameter identifies the host or service on which to connect.
  * @param[out] res An array of IP_Port structures will be allocated into this pointer.
@@ -554,7 +555,7 @@ bool net_connect(const Network *ns, const Memory *mem, const Logger *log, Socket
  * @retval -1 on error.
  */
 non_null()
-int32_t net_getipport(const Network *ns, const Memory *mem, const char *node, IP_Port **res, int tox_type, bool dns_enabled);
+int32_t net_getipport(const BSD_Sockets *ns, const Memory *mem, const char *node, IP_Port **res, int tox_type, bool dns_enabled);
 
 /** Deallocates memory allocated by net_getipport */
 non_null(1) nullable(2)
@@ -587,7 +588,7 @@ int unpack_ip_port(IP_Port *ip_port, const uint8_t *data, uint16_t length, bool 
  * @return true on success, false on failure.
  */
 non_null()
-bool bind_to_port(const Network *ns, Socket sock, Family family, uint16_t port);
+bool bind_to_port(const BSD_Sockets *ns, Socket sock, Family family, uint16_t port);
 
 /** @brief Get the last networking error code.
  *
@@ -629,18 +630,18 @@ char *net_strerror(int error, Net_Strerror *buf);
  * ip must be in network order EX: 127.0.0.1 = (7F000001).
  * port is in host byte order (this means don't worry about it).
  *
- * @return Networking_Core object if no problems
+ * @return BSD_Socketsing_Core object if no problems
  * @retval NULL if there are problems.
  *
  * If error is non NULL it is set to 0 if no issues, 1 if socket related error, 2 if other.
  */
 non_null(1, 2, 3, 4) nullable(7)
 Networking_Core *new_networking_ex(
-    const Logger *log, const Memory *mem, const Network *ns, const IP *ip,
+    const Logger *log, const Memory *mem, const BSD_Sockets *ns, const IP *ip,
     uint16_t port_from, uint16_t port_to, unsigned int *error);
 
 non_null()
-Networking_Core *new_networking_no_udp(const Logger *log, const Memory *mem, const Network *ns);
+Networking_Core *new_networking_no_udp(const Logger *log, const Memory *mem, const BSD_Sockets *ns);
 
 /** Function to cleanup networking stuff (doesn't do much right now). */
 nullable(1)

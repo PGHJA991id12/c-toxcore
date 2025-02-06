@@ -67,7 +67,7 @@ struct TCP_Server {
     const Logger *logger;
     const Memory *mem;
     const Random *rng;
-    const Network *ns;
+    const BSD_Sockets *ns;
     Onion *onion;
     Forwarding *forwarding;
 
@@ -885,7 +885,7 @@ static int confirm_tcp_connection(TCP_Server *tcp_server, const Mono_Time *mono_
 non_null()
 static int accept_connection(TCP_Server *tcp_server, Socket sock)
 {
-    if (!sock_valid(sock)) {
+    if (!net_sock_valid(sock)) {
         return -1;
     }
 
@@ -920,11 +920,11 @@ static int accept_connection(TCP_Server *tcp_server, Socket sock)
 }
 
 non_null()
-static Socket new_listening_tcp_socket(const Logger *logger, const Memory *mem, const Network *ns, Family family, uint16_t port)
+static Socket new_listening_tcp_socket(const Logger *logger, const Memory *mem, const BSD_Sockets *ns, Family family, uint16_t port)
 {
     const Socket sock = net_socket(ns, family, TOX_SOCK_STREAM, TOX_PROTO_TCP);
 
-    if (!sock_valid(sock)) {
+    if (!net_sock_valid(sock)) {
         LOGGER_ERROR(logger, "TCP socket creation failed (family = %d)", family.value);
         return net_invalid_socket();
     }
@@ -953,7 +953,7 @@ static Socket new_listening_tcp_socket(const Logger *logger, const Memory *mem, 
     return sock;
 }
 
-TCP_Server *new_tcp_server(const Logger *logger, const Memory *mem, const Random *rng, const Network *ns,
+TCP_Server *new_tcp_server(const Logger *logger, const Memory *mem, const Random *rng, const BSD_Sockets *ns,
                            bool ipv6_enabled, uint16_t num_sockets,
                            const uint16_t *ports, const uint8_t *secret_key, Onion *onion, Forwarding *forwarding)
 {
@@ -1016,7 +1016,7 @@ TCP_Server *new_tcp_server(const Logger *logger, const Memory *mem, const Random
     for (uint32_t i = 0; i < num_sockets; ++i) {
         const Socket sock = new_listening_tcp_socket(logger, mem, ns, family, ports[i]);
 
-        if (!sock_valid(sock)) {
+        if (!net_sock_valid(sock)) {
             continue;
         }
 

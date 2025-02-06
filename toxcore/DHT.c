@@ -94,7 +94,7 @@ typedef struct Cryptopacket_Handler {
 
 struct DHT {
     const Logger *log;
-    const Network *ns;
+    const BSD_Sockets *ns;
     Mono_Time *mono_time;
     const Memory *mem;
     const Random *rng;
@@ -2563,7 +2563,7 @@ static int handle_lan_discovery(void *object, const IP_Port *source, const uint8
 
 /*----------------------------------------------------------------------------------*/
 
-DHT *new_dht(const Logger *log, const Memory *mem, const Random *rng, const Network *ns,
+DHT *new_dht(const Logger *log, const Memory *mem, const Random *rng, const BSD_Sockets *ns,
              Mono_Time *mono_time, Networking_Core *net,
              bool hole_punching_enabled, bool lan_discovery_enabled)
 {

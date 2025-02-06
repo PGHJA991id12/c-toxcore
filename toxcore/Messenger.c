@@ -3453,7 +3453,7 @@ static void m_handle_friend_request(
  *
  * if error is not NULL it will be set to one of the values in the enum above.
  */
-Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *rng, const Network *ns,
+Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *rng, const BSD_Sockets *ns,
                          Messenger_Options *options, Messenger_Error *error)
 {
     if (options == nullptr) {

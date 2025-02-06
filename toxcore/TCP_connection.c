@@ -14,6 +14,7 @@
 #include "DHT.h"
 #include "TCP_client.h"
 #include "attributes.h"
+#include "bin_unpack.h"
 #include "ccompat.h"
 #include "crypto_core.h"
 #include "forwarding.h"
@@ -29,7 +30,7 @@ struct TCP_Connections {
     const Memory *mem;
     const Random *rng;
     Mono_Time *mono_time;
-    const Network *ns;
+    const BSD_Sockets *ns;
     DHT *dht;
 
     uint8_t self_public_key[CRYPTO_PUBLIC_KEY_SIZE];
@@ -1595,7 +1596,7 @@ int set_tcp_onion_status(TCP_Connections *tcp_c, bool status)
  *
  * Returns NULL on failure.
  */
-TCP_Connections *new_tcp_connections(const Logger *logger, const Memory *mem, const Random *rng, const Network *ns,
+TCP_Connections *new_tcp_connections(const Logger *logger, const Memory *mem, const Random *rng, const BSD_Sockets *ns,
                                      Mono_Time *mono_time, const uint8_t *secret_key, const TCP_Proxy_Info *proxy_info)
 {
     assert(logger != nullptr);

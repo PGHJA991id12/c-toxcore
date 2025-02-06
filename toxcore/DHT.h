@@ -464,7 +464,7 @@ int dht_load(DHT *dht, const uint8_t *data, uint32_t length);
 
 /** Initialize DHT. */
 non_null()
-DHT *new_dht(const Logger *log, const Memory *mem, const Random *rng, const Network *ns,
+DHT *new_dht(const Logger *log, const Memory *mem, const Random *rng, const BSD_Sockets *ns,
              Mono_Time *mono_time, Networking_Core *net, bool hole_punching_enabled, bool lan_discovery_enabled);
 
 nullable(1)

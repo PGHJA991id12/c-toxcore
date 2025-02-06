@@ -47,7 +47,7 @@ static void test_basic(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);
@@ -314,7 +314,7 @@ static void test_some(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);
@@ -512,7 +512,7 @@ static void test_client(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);
@@ -650,7 +650,7 @@ static void test_client_invalid(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);
@@ -729,7 +729,7 @@ static void test_tcp_connection(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);
@@ -844,7 +844,7 @@ static void test_tcp_connection2(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);

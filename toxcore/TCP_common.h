@@ -56,7 +56,7 @@ typedef enum Tcp_Packet {
 typedef struct TCP_Connection {
     const Memory *mem;
     const Random *rng;
-    const Network *ns;
+    const BSD_Sockets *ns;
     Socket sock;
     IP_Port ip_port;  // for debugging.
     uint8_t sent_nonce[CRYPTO_NONCE_SIZE]; /* Nonce of sent packets. */
@@ -104,7 +104,7 @@ int write_packet_tcp_secure_connection(
  */
 non_null()
 int read_tcp_packet(
-    const Logger *logger, const Memory *mem, const Network *ns, Socket sock, uint8_t *data, uint16_t length, const IP_Port *ip_port);
+    const Logger *logger, const Memory *mem, const BSD_Sockets *ns, Socket sock, uint8_t *data, uint16_t length, const IP_Port *ip_port);
 
 /**
  * @return length of received packet on success.
@@ -113,7 +113,7 @@ int read_tcp_packet(
  */
 non_null()
 int read_packet_tcp_secure_connection(
-    const Logger *logger, const Memory *mem, const Network *ns,
+    const Logger *logger, const Memory *mem, const BSD_Sockets *ns,
     Socket sock, uint16_t *next_packet_length,
     const uint8_t *shared_key, uint8_t *recv_nonce, uint8_t *data,
     uint16_t max_len, const IP_Port *ip_port);

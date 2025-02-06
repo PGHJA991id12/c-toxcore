@@ -9,10 +9,10 @@
 #include "test_util.hh"
 
 struct Network_Class {
-    static Network_Funcs const vtable;
-    Network const self;
+    static BSD_Sockets_Funcs const vtable;
+    BSD_Sockets const self;
 
-    operator Network const *() const { return &self; }
+    operator BSD_Sockets const *() const { return &self; }
 
     Network_Class(Network_Class const &) = default;
     Network_Class()
@@ -21,22 +21,22 @@ struct Network_Class {
     }
 
     virtual ~Network_Class();
-    virtual net_close_cb close = 0;
-    virtual net_accept_cb accept = 0;
-    virtual net_bind_cb bind = 0;
-    virtual net_listen_cb listen = 0;
-    virtual net_connect_cb connect = 0;
-    virtual net_recvbuf_cb recvbuf = 0;
-    virtual net_recv_cb recv = 0;
-    virtual net_recvfrom_cb recvfrom = 0;
-    virtual net_send_cb send = 0;
-    virtual net_sendto_cb sendto = 0;
-    virtual net_socket_cb socket = 0;
-    virtual net_socket_nonblock_cb socket_nonblock = 0;
-    virtual net_getsockopt_cb getsockopt = 0;
-    virtual net_setsockopt_cb setsockopt = 0;
-    virtual net_getaddrinfo_cb getaddrinfo = 0;
-    virtual net_freeaddrinfo_cb freeaddrinfo = 0;
+    virtual bsocks_close_cb close = 0;
+    virtual bsocks_accept_cb accept = 0;
+    virtual bsocks_bind_cb bind = 0;
+    virtual bsocks_listen_cb listen = 0;
+    virtual bsocks_connect_cb connect = 0;
+    virtual bsocks_recvbuf_cb recvbuf = 0;
+    virtual bsocks_recv_cb recv = 0;
+    virtual bsocks_recvfrom_cb recvfrom = 0;
+    virtual bsocks_send_cb send = 0;
+    virtual bsocks_sendto_cb sendto = 0;
+    virtual bsocks_socket_cb socket = 0;
+    virtual bsocks_socket_nonblock_cb socket_nonblock = 0;
+    virtual bsocks_getsockopt_cb getsockopt = 0;
+    virtual bsocks_setsockopt_cb setsockopt = 0;
+    virtual bsocks_getaddrinfo_cb getaddrinfo = 0;
+    virtual bsocks_freeaddrinfo_cb freeaddrinfo = 0;
 };
 
 /**
@@ -44,19 +44,19 @@ struct Network_Class {
  * subclassed to override individual (or all) functions.
  */
 class Test_Network : public Network_Class {
-    const Network *net = REQUIRE_NOT_NULL(os_network());
+    const BSD_Sockets *net = REQUIRE_NOT_NULL(os_bsd_sockets());
 
     int close(void *obj, Socket sock) override;
     Socket accept(void *obj, Socket sock) override;
-    int bind(void *obj, Socket sock, const Network_Addr *addr) override;
+    int bind(void *obj, Socket sock, const BSD_Sockets_Addr *addr) override;
     int listen(void *obj, Socket sock, int backlog) override;
-    int connect(void *obj, Socket sock, const Network_Addr *addr) override;
+    int connect(void *obj, Socket sock, const BSD_Sockets_Addr *addr) override;
     int recvbuf(void *obj, Socket sock) override;
     int recv(void *obj, Socket sock, uint8_t *buf, size_t len) override;
-    int recvfrom(void *obj, Socket sock, uint8_t *buf, size_t len, Network_Addr *addr) override;
+    int recvfrom(void *obj, Socket sock, uint8_t *buf, size_t len, BSD_Sockets_Addr *addr) override;
     int send(void *obj, Socket sock, const uint8_t *buf, size_t len) override;
     int sendto(
-        void *obj, Socket sock, const uint8_t *buf, size_t len, const Network_Addr *addr) override;
+        void *obj, Socket sock, const uint8_t *buf, size_t len, const BSD_Sockets_Addr *addr) override;
     Socket socket(void *obj, int domain, int type, int proto) override;
     int socket_nonblock(void *obj, Socket sock, bool nonblock) override;
     int getsockopt(
@@ -64,8 +64,8 @@ class Test_Network : public Network_Class {
     int setsockopt(
         void *obj, Socket sock, int level, int optname, const void *optval, size_t optlen) override;
     int getaddrinfo(void *obj, const Memory *mem, const char *address, int family, int protocol,
-        Network_Addr **addrs) override;
-    int freeaddrinfo(void *obj, const Memory *mem, Network_Addr *addrs) override;
+        BSD_Sockets_Addr **addrs) override;
+    int freeaddrinfo(void *obj, const Memory *mem, BSD_Sockets_Addr *addrs) override;
 };
 
 template <>

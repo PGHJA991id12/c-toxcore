@@ -106,7 +106,7 @@ static Forwarding_Subtox *new_forwarding_subtox(const Memory *mem, bool no_udp, 
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
 
     Forwarding_Subtox *subtox = (Forwarding_Subtox *)calloc(1, sizeof(Forwarding_Subtox));
@@ -156,7 +156,7 @@ static void test_forwarding(void)
     ck_assert(mem != nullptr);
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
 
     uint32_t index[NUM_FORWARDER];

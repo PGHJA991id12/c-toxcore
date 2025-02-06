@@ -54,7 +54,7 @@ struct Broadcast_Info {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
 non_null()
-static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const Network *ns)
+static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const BSD_Sockets *ns)
 {
     Broadcast_Info *broadcast = (Broadcast_Info *)mem_alloc(mem, sizeof(Broadcast_Info));
 
@@ -128,7 +128,7 @@ non_null()
 static bool ip4_is_local(const IP4 *ip4);
 
 non_null()
-static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const Network *ns)
+static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const BSD_Sockets *ns)
 {
     Broadcast_Info *broadcast = (Broadcast_Info *)mem_alloc(mem, sizeof(Broadcast_Info));
 
@@ -144,7 +144,7 @@ static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const Network *ns
      */
     const Socket sock = net_socket(ns, net_family_ipv4(), TOX_SOCK_STREAM, 0);
 
-    if (!sock_valid(sock)) {
+    if (!net_sock_valid(sock)) {
         mem_delete(mem, broadcast);
         return nullptr;
     }
@@ -223,7 +223,7 @@ static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const Network *ns
 #else // TODO(irungentoo): Other platforms?
 
 non_null()
-static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const Network *ns)
+static Broadcast_Info *fetch_broadcast_info(const Memory *mem, const BSD_Sockets *ns)
 {
     Broadcast_Info *broadcast = (Broadcast_Info *)mem_alloc(mem, sizeof(Broadcast_Info));
 
@@ -409,7 +409,7 @@ bool lan_discovery_send(const Networking_Core *net, const Broadcast_Info *broadc
     return res;
 }
 
-Broadcast_Info *lan_discovery_init(const Memory *mem, const Network *ns)
+Broadcast_Info *lan_discovery_init(const Memory *mem, const BSD_Sockets *ns)
 {
     return fetch_broadcast_info(mem, ns);
 }

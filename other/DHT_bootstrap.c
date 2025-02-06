@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     ip_init(&ip, ipv6enabled);
 
     const Random *rng = os_random();
-    const Network *ns = os_network();
+    const BSD_Sockets *ns = os_bsd_sockets();
     const Memory *mem = os_memory();
 
     Logger *logger = logger_new(mem);

@@ -477,13 +477,13 @@ bool net_family_is_tox_tcp_ipv6(Family family)
     return family.value == family_tox_tcp_ipv6.value;
 }
 
-bool sock_valid(Socket sock)
+bool net_sock_valid(Socket sock)
 {
     const Socket invalid_socket = net_invalid_socket();
     return sock.value != invalid_socket.value;
 }
 
-struct Network_Addr {
+struct BSD_Sockets_Addr {
     struct sockaddr_storage addr;
     size_t size;
 };
@@ -505,7 +505,7 @@ static Socket sys_accept(void *obj, Socket sock)
 }
 
 non_null()
-static int sys_bind(void *obj, Socket sock, const Network_Addr *addr)
+static int sys_bind(void *obj, Socket sock, const BSD_Sockets_Addr *addr)
 {
     return bind(net_socket_to_native(sock), (const struct sockaddr *)&addr->addr, addr->size);
 }
@@ -517,7 +517,7 @@ static int sys_listen(void *obj, Socket sock, int backlog)
 }
 
 non_null()
-static int sys_connect(void *obj, Socket sock, const Network_Addr *addr)
+static int sys_connect(void *obj, Socket sock, const BSD_Sockets_Addr *addr)
 {
     return connect(net_socket_to_native(sock), (const struct sockaddr *)&addr->addr, addr->size);
 }
@@ -549,13 +549,13 @@ static int sys_send(void *obj, Socket sock, const uint8_t *buf, size_t len)
 }
 
 non_null()
-static int sys_sendto(void *obj, Socket sock, const uint8_t *buf, size_t len, const Network_Addr *addr)
+static int sys_sendto(void *obj, Socket sock, const uint8_t *buf, size_t len, const BSD_Sockets_Addr *addr)
 {
     return sendto(net_socket_to_native(sock), (const char *)buf, len, 0, (const struct sockaddr *)&addr->addr, addr->size);
 }
 
 non_null()
-static int sys_recvfrom(void *obj, Socket sock, uint8_t *buf, size_t len, Network_Addr *addr)
+static int sys_recvfrom(void *obj, Socket sock, uint8_t *buf, size_t len, BSD_Sockets_Addr *addr)
 {
     socklen_t size = addr->size;
     const int ret = recvfrom(net_socket_to_native(sock), (char *)buf, len, 0, (struct sockaddr *)&addr->addr, &size);
@@ -598,7 +598,7 @@ static int sys_setsockopt(void *obj, Socket sock, int level, int optname, const 
 // sets and fills an array of addrs for address
 // returns the number of entries in addrs
 non_null()
-static int sys_getaddrinfo(void *obj, const Memory *mem, const char *address, int family, int sock_type, Network_Addr **addrs)
+static int sys_getaddrinfo(void *obj, const Memory *mem, const char *address, int family, int sock_type, BSD_Sockets_Addr **addrs)
 {
     assert(addrs != nullptr);
 
@@ -621,7 +621,7 @@ static int sys_getaddrinfo(void *obj, const Memory *mem, const char *address, in
         return 0;
     }
 
-    const int32_t max_count = INT32_MAX / sizeof(Network_Addr);
+    const int32_t max_count = INT32_MAX / sizeof(BSD_Sockets_Addr);
 
     // we count number of "valid" results
     int result = 0;
@@ -635,7 +635,7 @@ static int sys_getaddrinfo(void *obj, const Memory *mem, const char *address, in
 
     assert(max_count >= result);
 
-    Network_Addr *tmp_addrs = (Network_Addr *)mem_valloc(mem, result, sizeof(Network_Addr));
+    BSD_Sockets_Addr *tmp_addrs = (BSD_Sockets_Addr *)mem_valloc(mem, result, sizeof(BSD_Sockets_Addr));
     if (tmp_addrs == nullptr) {
         freeaddrinfo(infos);
         return 0;
@@ -670,7 +670,7 @@ static int sys_getaddrinfo(void *obj, const Memory *mem, const char *address, in
 }
 
 non_null()
-static int sys_freeaddrinfo(void *obj, const Memory *mem, Network_Addr *addrs)
+static int sys_freeaddrinfo(void *obj, const Memory *mem, BSD_Sockets_Addr *addrs)
 {
     if (addrs == nullptr) {
         return 0;
@@ -681,7 +681,7 @@ static int sys_freeaddrinfo(void *obj, const Memory *mem, Network_Addr *addrs)
     return 0;
 }
 
-static const Network_Funcs os_network_funcs = {
+static const BSD_Sockets_Funcs os_bsd_sockets_funcs = {
     sys_close,
     sys_accept,
     sys_bind,
@@ -699,9 +699,9 @@ static const Network_Funcs os_network_funcs = {
     sys_getaddrinfo,
     sys_freeaddrinfo,
 };
-static const Network os_network_obj = {&os_network_funcs, nullptr};
+static const BSD_Sockets os_bsd_sockets_obj = {&os_bsd_sockets_funcs, nullptr};
 
-const Network *os_network(void)
+const BSD_Sockets *os_bsd_sockets(void)
 {
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     if ((true)) {
@@ -715,12 +715,12 @@ const Network *os_network(void)
         return nullptr;
     }
 #endif /* OS_WIN32 */
-    return &os_network_obj;
+    return &os_bsd_sockets_obj;
 }
 
 #if 0
-/* TODO(iphydf): Call this from functions that use `os_network()`. */
-void os_network_deinit(const Network *ns)
+/* TODO(iphydf): Call this from functions that use `os_bsd_sockets()`. */
+void os_bsd_sockets_deinit(const BSD_Sockets *ns)
 {
 #ifdef OS_WIN32
     WSACleanup();
@@ -729,13 +729,13 @@ void os_network_deinit(const Network *ns)
 #endif /* 0 */
 
 non_null()
-static int net_setsockopt(const Network *ns, Socket sock, int level, int optname, const void *optval, size_t optlen)
+static int net_setsockopt(const BSD_Sockets *ns, Socket sock, int level, int optname, const void *optval, size_t optlen)
 {
     return ns->funcs->setsockopt(ns->obj, sock, level, optname, optval, optlen);
 }
 
 non_null()
-static int net_getsockopt(const Network *ns, Socket sock, int level, int optname, void *optval, size_t *optlen)
+static int net_getsockopt(const BSD_Sockets *ns, Socket sock, int level, int optname, void *optval, size_t *optlen)
 {
     return ns->funcs->getsockopt(ns->obj, sock, level, optname, optval, optlen);
 }
@@ -908,7 +908,7 @@ static void loglogdata(const Logger *log, const char *message, const uint8_t *bu
     }
 }
 
-int net_send(const Network *ns, const Logger *log,
+int net_send(const BSD_Sockets *ns, const Logger *log,
              Socket sock, const uint8_t *buf, size_t len, const IP_Port *ip_port, Net_Profile *net_profile)
 {
     const int res = ns->funcs->send(ns->obj, sock, buf, len);
@@ -923,13 +923,13 @@ int net_send(const Network *ns, const Logger *log,
 
 non_null()
 static int net_sendto(
-    const Network *ns,
-    Socket sock, const uint8_t *buf, size_t len, const Network_Addr *addr, const IP_Port *ip_port)
+    const BSD_Sockets *ns,
+    Socket sock, const uint8_t *buf, size_t len, const BSD_Sockets_Addr *addr, const IP_Port *ip_port)
 {
     return ns->funcs->sendto(ns->obj, sock, buf, len, addr);
 }
 
-int net_recv(const Network *ns, const Logger *log,
+int net_recv(const BSD_Sockets *ns, const Logger *log,
              Socket sock, uint8_t *buf, size_t len, const IP_Port *ip_port)
 {
     const int res = ns->funcs->recv(ns->obj, sock, buf, len);
@@ -938,40 +938,40 @@ int net_recv(const Network *ns, const Logger *log,
 }
 
 non_null()
-static int net_recvfrom(const Network *ns,
-                        Socket sock, uint8_t *buf, size_t len, Network_Addr *addr)
+static int net_recvfrom(const BSD_Sockets *ns,
+                        Socket sock, uint8_t *buf, size_t len, BSD_Sockets_Addr *addr)
 {
     return ns->funcs->recvfrom(ns->obj, sock, buf, len, addr);
 }
 
-int net_listen(const Network *ns, Socket sock, int backlog)
+int net_listen(const BSD_Sockets *ns, Socket sock, int backlog)
 {
     return ns->funcs->listen(ns->obj, sock, backlog);
 }
 
 non_null()
-static int net_bind(const Network *ns, Socket sock, const Network_Addr *addr)
+static int net_bind(const BSD_Sockets *ns, Socket sock, const BSD_Sockets_Addr *addr)
 {
     return ns->funcs->bind(ns->obj, sock, addr);
 }
 
-Socket net_accept(const Network *ns, Socket sock)
+Socket net_accept(const BSD_Sockets *ns, Socket sock)
 {
     return ns->funcs->accept(ns->obj, sock);
 }
 
 /** Close the socket. */
-void kill_sock(const Network *ns, Socket sock)
+void kill_sock(const BSD_Sockets *ns, Socket sock)
 {
     ns->funcs->close(ns->obj, sock);
 }
 
-bool set_socket_nonblock(const Network *ns, Socket sock)
+bool set_socket_nonblock(const BSD_Sockets *ns, Socket sock)
 {
     return ns->funcs->socket_nonblock(ns->obj, sock, true) == 0;
 }
 
-bool set_socket_nosigpipe(const Network *ns, Socket sock)
+bool set_socket_nosigpipe(const BSD_Sockets *ns, Socket sock)
 {
 #if defined(__APPLE__)
     int set = 1;
@@ -981,7 +981,7 @@ bool set_socket_nosigpipe(const Network *ns, Socket sock)
 #endif /* __APPLE__ */
 }
 
-bool set_socket_reuseaddr(const Network *ns, Socket sock)
+bool set_socket_reuseaddr(const BSD_Sockets *ns, Socket sock)
 {
     int set = 1;
 #if defined(OS_WIN32)
@@ -991,7 +991,7 @@ bool set_socket_reuseaddr(const Network *ns, Socket sock)
 #endif /* OS_WIN32 */
 }
 
-bool set_socket_dualstack(const Network *ns, Socket sock)
+bool set_socket_dualstack(const BSD_Sockets *ns, Socket sock)
 {
     int ipv6only = 0;
     size_t optsize = sizeof(ipv6only);
@@ -1014,7 +1014,7 @@ struct Networking_Core {
     const Logger *log;
     const Memory *mem;
     Packet_Handler packethandlers[256];
-    const Network *ns;
+    const BSD_Sockets *ns;
 
     Family family;
     uint16_t port;
@@ -1079,7 +1079,7 @@ int send_packet(const Networking_Core *net, const IP_Port *ip_port, Packet packe
         ipp_copy.ip.ip.v6 = ip6;
     }
 
-    Network_Addr addr;
+    BSD_Sockets_Addr addr;
 
     if (net_family_is_ipv4(ipp_copy.ip.family)) {
         struct sockaddr_in *const addr4 = (struct sockaddr_in *)&addr.addr;
@@ -1132,10 +1132,10 @@ int sendpacket(const Networking_Core *net, const IP_Port *ip_port, const uint8_t
  * Packet length is put into length.
  */
 non_null()
-static int receivepacket(const Network *ns, const Logger *log, Socket sock, IP_Port *ip_port, uint8_t *data, uint32_t *length)
+static int receivepacket(const BSD_Sockets *ns, const Logger *log, Socket sock, IP_Port *ip_port, uint8_t *data, uint32_t *length)
 {
     memset(ip_port, 0, sizeof(IP_Port));
-    Network_Addr addr = {{0}};
+    BSD_Sockets_Addr addr = {{0}};
     addr.size = sizeof(addr.addr);
     *length = 0;
 
@@ -1241,7 +1241,7 @@ void networking_poll(const Networking_Core *net, void *userdata)
  * If error is non NULL it is set to 0 if no issues, 1 if socket related error, 2 if other.
  */
 Networking_Core *new_networking_ex(
-    const Logger *log, const Memory *mem, const Network *ns, const IP *ip,
+    const Logger *log, const Memory *mem, const BSD_Sockets *ns, const IP *ip,
     uint16_t port_from, uint16_t port_to, unsigned int *error)
 {
     /* If both from and to are 0, use default port range
@@ -1296,7 +1296,7 @@ Networking_Core *new_networking_ex(
     temp->sock = net_socket(ns, temp->family, TOX_SOCK_DGRAM, TOX_PROTO_UDP);
 
     /* Check for socket error. */
-    if (!sock_valid(temp->sock)) {
+    if (!net_sock_valid(temp->sock)) {
         const int neterror = net_error();
         Net_Strerror error_str;
         LOGGER_ERROR(log, "failed to get a socket?! %d, %s", neterror, net_strerror(neterror, &error_str));
@@ -1353,7 +1353,7 @@ Networking_Core *new_networking_ex(
 
     /* Bind our socket to port PORT and the given IP address (usually 0.0.0.0 or ::) */
     uint16_t *portptr = nullptr;
-    Network_Addr addr = {{0}};
+    BSD_Sockets_Addr addr = {{0}};
 
     if (net_family_is_ipv4(temp->family)) {
         struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr.addr;
@@ -1477,7 +1477,7 @@ Networking_Core *new_networking_ex(
     return nullptr;
 }
 
-Networking_Core *new_networking_no_udp(const Logger *log, const Memory *mem, const Network *ns)
+Networking_Core *new_networking_no_udp(const Logger *log, const Memory *mem, const BSD_Sockets *ns)
 {
     /* this is the easiest way to completely disable UDP without changing too much code. */
     Networking_Core *net = (Networking_Core *)mem_alloc(mem, sizeof(Networking_Core));
@@ -1938,7 +1938,7 @@ bool addr_parse_ip(const char *address, IP *to)
  * @return false on failure, true on success.
  */
 non_null(1, 2, 3, 4) nullable(5)
-static bool addr_resolve(const Network *ns, const Memory *mem, const char *address, IP *to, IP *extra)
+static bool addr_resolve(const BSD_Sockets *ns, const Memory *mem, const char *address, IP *to, IP *extra)
 {
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     if ((true)) {
@@ -1953,7 +1953,7 @@ static bool addr_resolve(const Network *ns, const Memory *mem, const char *addre
     const Family tox_family = to->family;
     const int family = make_family(tox_family);
 
-    Network_Addr *addrs = nullptr;
+    BSD_Sockets_Addr *addrs = nullptr;
     const int rc = ns->funcs->getaddrinfo(ns->obj, mem, address, family, 0, &addrs);
 
     // Lookup failed / empty.
@@ -2027,7 +2027,7 @@ static bool addr_resolve(const Network *ns, const Memory *mem, const char *addre
     return result != 0;
 }
 
-bool addr_resolve_or_parse_ip(const Network *ns, const Memory *mem, const char *address, IP *to, IP *extra, bool dns_enabled)
+bool addr_resolve_or_parse_ip(const BSD_Sockets *ns, const Memory *mem, const char *address, IP *to, IP *extra, bool dns_enabled)
 {
     if (dns_enabled && addr_resolve(ns, mem, address, to, extra)) {
         return true;
@@ -2050,9 +2050,9 @@ const char *net_err_connect_to_string(Net_Err_Connect err)
     return "<invalid Net_Err_Connect>";
 }
 
-bool net_connect(const Network *ns, const Memory *mem, const Logger *log, Socket sock, const IP_Port *ip_port, Net_Err_Connect *err)
+bool net_connect(const BSD_Sockets *ns, const Memory *mem, const Logger *log, Socket sock, const IP_Port *ip_port, Net_Err_Connect *err)
 {
-    Network_Addr addr = {{0}};
+    BSD_Sockets_Addr addr = {{0}};
 
     if (net_family_is_ipv4(ip_port->ip.family)) {
         struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr.addr;
@@ -2105,7 +2105,7 @@ bool net_connect(const Network *ns, const Memory *mem, const Logger *log, Socket
     return true;
 }
 
-int32_t net_getipport(const Network *ns, const Memory *mem, const char *node, IP_Port **res, int tox_type, bool dns_enabled)
+int32_t net_getipport(const BSD_Sockets *ns, const Memory *mem, const char *node, IP_Port **res, int tox_type, bool dns_enabled)
 {
     assert(node != nullptr);
 
@@ -2152,7 +2152,7 @@ int32_t net_getipport(const Network *ns, const Memory *mem, const char *node, IP
     }
 
     // It's not an IP address, so now we try doing a DNS lookup.
-    Network_Addr *addrs = nullptr;
+    BSD_Sockets_Addr *addrs = nullptr;
     const int rc = ns->funcs->getaddrinfo(ns->obj, mem, node, AF_UNSPEC, type, &addrs);
 
     // Lookup failed / empty.
@@ -2225,9 +2225,9 @@ void net_freeipport(const Memory *mem, IP_Port *ip_ports)
     mem_delete(mem, ip_ports);
 }
 
-bool bind_to_port(const Network *ns, Socket sock, Family family, uint16_t port)
+bool bind_to_port(const BSD_Sockets *ns, Socket sock, Family family, uint16_t port)
 {
-    Network_Addr addr = {{0}};
+    BSD_Sockets_Addr addr = {{0}};
 
     if (net_family_is_ipv4(family)) {
         struct sockaddr_in *addr4 = (struct sockaddr_in *)&addr.addr;
@@ -2248,7 +2248,7 @@ bool bind_to_port(const Network *ns, Socket sock, Family family, uint16_t port)
     return net_bind(ns, sock, &addr) == 0;
 }
 
-Socket net_socket(const Network *ns, Family domain, int type, int protocol)
+Socket net_socket(const BSD_Sockets *ns, Family domain, int type, int protocol)
 {
     const int platform_domain = make_family(domain);
     const int platform_type = make_socktype(type);
@@ -2256,7 +2256,7 @@ Socket net_socket(const Network *ns, Family domain, int type, int protocol)
     return ns->funcs->socket(ns->obj, platform_domain, platform_type, platform_prot);
 }
 
-uint16_t net_socket_data_recv_buffer(const Network *ns, Socket sock)
+uint16_t net_socket_data_recv_buffer(const BSD_Sockets *ns, Socket sock)
 {
     const int count = ns->funcs->recvbuf(ns->obj, sock);
     return (uint16_t)max_s32(0, min_s32(count, UINT16_MAX));

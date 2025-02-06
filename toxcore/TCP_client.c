@@ -108,7 +108,7 @@ void tcp_con_set_custom_uint(TCP_Client_Connection *con, uint32_t value)
  * @retval false on failure
  */
 non_null()
-static bool connect_sock_to(const Network *ns, const Logger *logger, const Memory *mem, Socket sock, const IP_Port *ip_port, const TCP_Proxy_Info *proxy_info)
+static bool connect_sock_to(const BSD_Sockets *ns, const Logger *logger, const Memory *mem, Socket sock, const IP_Port *ip_port, const TCP_Proxy_Info *proxy_info)
 {
     Net_Err_Connect err;
     if (proxy_info->proxy_type != TCP_PROXY_NONE) {
@@ -593,7 +593,7 @@ void forwarding_handler(TCP_Client_Connection *con, forwarded_response_cb *forwa
 
 /** Create new TCP connection to ip_port/public_key */
 TCP_Client_Connection *new_tcp_connection(
-    const Logger *logger, const Memory *mem, const Mono_Time *mono_time, const Random *rng, const Network *ns,
+    const Logger *logger, const Memory *mem, const Mono_Time *mono_time, const Random *rng, const BSD_Sockets *ns,
     const IP_Port *ip_port, const uint8_t *public_key, const uint8_t *self_public_key, const uint8_t *self_secret_key,
     const TCP_Proxy_Info *proxy_info, Net_Profile *net_profile)
 {
@@ -622,7 +622,7 @@ TCP_Client_Connection *new_tcp_connection(
 
     const Socket sock = net_socket(ns, family, TOX_SOCK_STREAM, TOX_PROTO_TCP);
 
-    if (!sock_valid(sock)) {
+    if (!net_sock_valid(sock)) {
         LOGGER_ERROR(logger, "Failed to create TCP socket with family %d", family.value);
         return nullptr;
     }

@@ -18,7 +18,7 @@ static void test_addr_resolv_localhost(void)
     errno = 0;
 #endif
 
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
 
     const Memory *mem = os_memory();

@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
 
     const Memory *mem = os_memory();
     const Random *rng = os_random();
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
 
     Logger *logger = logger_new(mem);
 

@@ -52,7 +52,7 @@ static void test_store_data(void)
 {
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
-    const Network *ns = os_network();
+    const Network *ns = os_bsd_sockets();
     ck_assert(ns != nullptr);
     const Memory *mem = os_memory();
     ck_assert(mem != nullptr);
